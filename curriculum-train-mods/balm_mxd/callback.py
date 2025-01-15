@@ -7,7 +7,7 @@ import torch
 def calc_prob(current_step, train_steps, vals):
     t = current_step / train_steps
     prob = 1 / (1 + math.exp(-vals['k'] * (t - vals['shift'])))
-    prob = (vals['A'] * prob) + vals['B']
+    prob = (-vals['A'] * prob) + vals['B']
     return prob
 
 class MixedProbCallback(TrainerCallback):

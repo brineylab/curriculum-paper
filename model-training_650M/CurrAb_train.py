@@ -37,7 +37,7 @@ def parser():
     )
     parser.add_argument(
         "--A",
-        default=-0.4,
+        default=0.4,
         type=float,
     )
     parser.add_argument(
