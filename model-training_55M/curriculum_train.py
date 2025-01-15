@@ -24,41 +24,43 @@ def parser():
         "--run_name",
         required=True,
     )
+    # curriculum params
     parser.add_argument(
         "--k",
-        required=True,
+        default=15,
         type=float,
     )
     parser.add_argument(
         "--shift",
-        required=True,
+        default=0.8166,
         type=float,
     )
     parser.add_argument(
         "--A",
-        required=True,
+        default=-0.4,
         type=float,
     )
     parser.add_argument(
         "--B",
-        required=True,
+        default=0.7,
         type=float,
     )
+    # data
     parser.add_argument(
         "--paired_dir",
-        default="/home/jovyan/shared/Sarah/current/mixed-data_final/2_sep-tokens/paired/data/sep/",
+        required=True,
     )
     parser.add_argument(
         "--unpaired_dir",
-        default="../mxd-sep-tokens/unpaired/data/sep/",
+        required=True,
     )
     parser.add_argument(
-        "--shards_dir",
-        default="unpaired-train_20241002_shards/",
+        "--shards_dir", # name of directory containing unpaired dataset shards
+        required=True,
     )
     parser.add_argument(
         "--cache_dir",
-        default=".cache/"
+        required=True,
     )
     args = parser.parse_args()
     return args
@@ -100,8 +102,8 @@ def main():
     )
 
     # wand
-    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
-    os.environ['WANDB_RUN_GROUP'] = 'prob-curves'
+    os.environ['WANDB_PROJECT'] = 'mxd-data'
+    os.environ['WANDB_RUN_GROUP'] = 'mxd-curriculum'
 
     # model
     model_config = define_config(MixedConfig)

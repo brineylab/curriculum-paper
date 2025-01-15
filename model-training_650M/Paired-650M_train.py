@@ -74,7 +74,7 @@ def main():
     )
 
     # wandb
-    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
+    os.environ['WANDB_PROJECT'] = 'mxd-data'
     os.environ['WANDB_RUN_GROUP'] = 'large-scale'
 
     # model

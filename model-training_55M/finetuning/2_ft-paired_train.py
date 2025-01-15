@@ -22,19 +22,19 @@ def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--paired_dir",
-        default="../../2_sep-tokens/paired/data/sep/",
+        required=True,
     )
     parser.add_argument(
         "--unpaired_dir",
-        default="../../2_sep-tokens/unpaired/data/sep/",
+        required=True,
     )
     parser.add_argument(
-        "--shards_dir",
-        default="unpaired-train_20241002_shards/",
+        "--shards_dir", # name of directory containing unpaired dataset shards
+        required=True,
     )
     parser.add_argument(
         "--cache_dir",
-        default=".cache-ft/"
+        required=True,
     )
     args = parser.parse_args()
     return args

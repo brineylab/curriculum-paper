@@ -33,7 +33,7 @@ def parser():
         required=True,
     )
     parser.add_argument(
-        "--shards_dir",
+        "--shards_dir", # name of directory containing unpaired dataset shards
         required=True,
     )
     parser.add_argument(
@@ -77,8 +77,8 @@ def main():
     )
 
     # wandb
-    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
-    os.environ['WANDB_RUN_GROUP'] = 'sep-tokens'
+    os.environ['WANDB_PROJECT'] = 'mxd-data'
+    os.environ['WANDB_RUN_GROUP'] = 'unpaired-only'
 
     # model
     model_config = define_config(MixedConfig)

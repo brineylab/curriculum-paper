@@ -11,7 +11,7 @@ MixedConfig = {
     # 55M params
     "num_hidden_layers": 5,
     "num_attention_heads": 20,
-    "hidden_size": 960, # biggest effect on # of parameters
+    "hidden_size": 960,
     "intermediate_size": 3840, # 4x the hidden size
     "vocab_size": 33,
     "pad_token_id": 1,

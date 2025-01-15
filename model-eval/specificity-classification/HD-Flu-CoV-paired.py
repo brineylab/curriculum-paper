@@ -1,5 +1,9 @@
+import os
 import argparse
 import pathlib
+from datetime import date
+import pandas as pd
+import numpy as np
 from datasets import (
     DatasetDict,
     ClassLabel,
@@ -11,24 +15,15 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
-import torch
 from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
     matthews_corrcoef,
-    roc_auc_score,
-    average_precision_score,
     accuracy_score
 )
-import evaluate
-accuracy = evaluate.load("accuracy")
-from datetime import date
-from random import randint
 import wandb
-import pandas as pd
-import numpy as np
-import os
+
 
 # parser
 def parser():
@@ -52,8 +47,7 @@ def parser():
 # processing and tokenization
 def preprocess_dataset(
     batch, 
-    tokenizer=None, 
-    tokenizer_path="./tokenizer", 
+    tokenizer,
     separator="<sep>",
     max_len=320
 ) -> list:

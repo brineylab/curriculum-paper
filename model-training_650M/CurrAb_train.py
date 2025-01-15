@@ -24,6 +24,7 @@ def parser():
         "--run_name",
         default="mxd-curr_max07-k15_<cls>_lr1e-4_650M-ESM_500k-stp",
     )
+    # curriculum params
     parser.add_argument(
         "--k",
         default=15,
@@ -44,21 +45,22 @@ def parser():
         default=0.7,
         type=float,
     )
+    # data
     parser.add_argument(
         "--paired_dir",
-        default="../data/TTE/cls_separated/",
+        required=True,
     )
     parser.add_argument(
         "--unpaired_dir",
-        default="../data/TTE/cls_separated/",
+        required=True,
     )
     parser.add_argument(
-        "--shards_dir",
-        default="unpaired-train_20241119_shards/",
+        "--shards_dir", # name of directory containing unpaired dataset shards
+        required=True,
     )
     parser.add_argument(
         "--cache_dir",
-        default=".cache/"
+        required=True,
     )
     args = parser.parse_args()
     return args
@@ -103,7 +105,7 @@ def main():
     )
 
     # wand
-    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
+    os.environ['WANDB_PROJECT'] = 'mxd-data'
     os.environ['WANDB_RUN_GROUP'] = 'large-scale'
 
     # model

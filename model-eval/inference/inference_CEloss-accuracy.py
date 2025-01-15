@@ -1,19 +1,23 @@
-from dataclasses import dataclass
-import numpy as np
-from transformers import EsmForMaskedLM, EsmTokenizer, TrainingArguments, Trainer, DataCollatorForLanguageModeling
-from datasets import DatasetDict, Dataset
 import torch
 import argparse
 import pathlib
-from tqdm import tqdm
-import pickle
 import csv
+import numpy as np
+import pandas as pd
+from dataclasses import dataclass
+from transformers import (
+    EsmForMaskedLM, 
+    EsmTokenizer, 
+    Trainer, 
+    DataCollatorForLanguageModeling
+)
+from datasets import DatasetDict, Dataset
 from balm_mxd import (
     MixedConfig,
     define_args,
     tokenize,
 )
-import pandas as pd
+
 from sklearn.metrics import accuracy_score
 
 def parser():

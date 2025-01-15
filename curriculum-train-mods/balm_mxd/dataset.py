@@ -1,8 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 import random
-import pandas as pd
-from balm_mxd import calc_prob
+from . import calc_prob
 from datasets import load_dataset
 from accelerate import Accelerator
 
