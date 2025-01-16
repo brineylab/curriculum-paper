@@ -1,1 +1,0 @@
-Training modifications used to train curriculum and mixed-data models

@@ -7,7 +7,7 @@ from transformers import (
     DataCollatorForLanguageModeling,
     Trainer,
 )
-from balm_mxd import (
+from curriculum_mods import (
     MixedProbCallback,
     MixedConfig,
     define_args,

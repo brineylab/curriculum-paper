@@ -12,7 +12,7 @@ from transformers import (
     DataCollatorForLanguageModeling
 )
 from datasets import DatasetDict, Dataset
-from balm_mxd import (
+from curriculum_mods import (
     MixedConfig,
     define_args,
     tokenize,
