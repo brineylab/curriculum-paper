@@ -14,9 +14,11 @@ We introduce a method of curriculum learning for antibody language models (AbLMs
 Training datasets can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo.14661302) and model weights for CurrAb are avaliable on [Hugging Face](https://huggingface.co/brineylab/CurrAb).
 
 ### how should I cite this?
-The curriculum learning paper has been published as a [preprint on biorxiv](), and can be cited as:
+The curriculum learning paper has been published as a [preprint on biorxiv](https://www.biorxiv.org/content/10.1101/2025.02.27.640641v1), and can be cited as:
 
 ```
+Burbach, S. M., & Briney, B. (2025). A curriculum learning approach to training antibody language models.
+bioRxiv (p. 2025.02.27.640641). https://doi.org/10.1101/2025.02.27.640641
 
 ```
 
