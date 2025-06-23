@@ -22,28 +22,7 @@ def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--run_name",
-        default="mxd-curr_max07-k15_<cls>_lr1e-4_650M-ESM_500k-stp",
-    )
-    # curriculum params
-    parser.add_argument(
-        "--k",
-        default=15,
-        type=float,
-    )
-    parser.add_argument(
-        "--shift",
-        default=0.8166,
-        type=float,
-    )
-    parser.add_argument(
-        "--A",
-        default=0.4,
-        type=float,
-    )
-    parser.add_argument(
-        "--B",
-        default=0.7,
-        type=float,
+        default="ft-unpaired_<cls>_lr1e-4_650M-ESM_312k-stp",
     )
     # data
     parser.add_argument(
@@ -66,16 +45,26 @@ def parser():
     return args
 
 def main():
+    # run name
     args = parser()
-    run_name = f"{args.run_name}_{date.today().isoformat()}"
+    run_name = args.run_name # getting rid of date so I can schedule paired ft automatically
 
-    # update config for 650M model
+    ## update config steps & warmup
+    # total steps for unpaired phase: 500000 * 0.625 = 312,500
+    # warmup = 6% = 18,750
+    MixedConfig['max_steps'] = 312500
+    MixedConfig['warmup_steps'] = 18750
+    MixedConfig["eval_steps"] = 5000
+
+    # Model size - 650M
     MixedConfig['num_hidden_layers'] = 33
     MixedConfig['hidden_size'] = 1280
     MixedConfig['intermediate_size'] = 5120
+
+    # Training Params
     MixedConfig['batch_size'] = 64
     MixedConfig['peak_learning_rate'] =  1e-4
-
+    
     # seed
     set_seed(MixedConfig.get('seed'))
     
@@ -83,7 +72,7 @@ def main():
     tokenizer = EsmTokenizer.from_pretrained("../tokenizer/vocab.txt")
     shards_dir = f'{args.unpaired_dir}{args.shards_dir}'
     data_files = {
-        "paired_train": f'{args.paired_dir}paired-train_20241119.parquet',
+        "paired_train": None,
         "unpaired_train": [os.path.join(shards_dir, f) for f in os.listdir(shards_dir) if f.endswith('.parquet')],
         "paired_eval": f'{args.paired_dir}paired-eval_20241119.parquet',
         "unpaired_eval": f'{args.unpaired_dir}unpaired-eval_20241119.parquet',
@@ -91,11 +80,8 @@ def main():
     train_dataset, eval_dataset = process_datasets(data_files=data_files,
                                                    tokenizer=tokenizer,
                                                    config=MixedConfig,
-                                                   constant_prob=False,
-                                                   curr_prob={"k": args.k, 
-                                                              "shift": args.shift, 
-                                                              "A": args.A, 
-                                                              "B": args.B},
+                                                   constant_prob=True,
+                                                   prob=1,
                                                    cache_dir=args.cache_dir,
                                                    seed=MixedConfig.get('seed'))
 
@@ -105,7 +91,7 @@ def main():
     )
 
     # wandb
-    os.environ['WANDB_PROJECT'] = 'mxd-data'
+    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
     os.environ['WANDB_RUN_GROUP'] = 'large-scale'
 
     # model

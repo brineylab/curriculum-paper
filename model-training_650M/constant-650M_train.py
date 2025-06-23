@@ -22,28 +22,7 @@ def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--run_name",
-        default="mxd-curr_max07-k15_<cls>_lr1e-4_650M-ESM_500k-stp",
-    )
-    # curriculum params
-    parser.add_argument(
-        "--k",
-        default=15,
-        type=float,
-    )
-    parser.add_argument(
-        "--shift",
-        default=0.8166,
-        type=float,
-    )
-    parser.add_argument(
-        "--A",
-        default=0.4,
-        type=float,
-    )
-    parser.add_argument(
-        "--B",
-        default=0.7,
-        type=float,
+        default="mxd-const-0.625_<cls>_lr1e-4_650M-ESM_500k-stp",
     )
     # data
     parser.add_argument(
@@ -91,11 +70,8 @@ def main():
     train_dataset, eval_dataset = process_datasets(data_files=data_files,
                                                    tokenizer=tokenizer,
                                                    config=MixedConfig,
-                                                   constant_prob=False,
-                                                   curr_prob={"k": args.k, 
-                                                              "shift": args.shift, 
-                                                              "A": args.A, 
-                                                              "B": args.B},
+                                                   constant_prob=True,
+                                                   prob=0.625,
                                                    cache_dir=args.cache_dir,
                                                    seed=MixedConfig.get('seed'))
 
