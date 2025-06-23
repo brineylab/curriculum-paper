@@ -1,30 +1,32 @@
-import torch
 import argparse
-import pathlib
 import csv
+import os
+import pathlib
+
 import numpy as np
 import pandas as pd
-from dataclasses import dataclass
+import torch
+from datasets import Dataset, DatasetDict
+from sklearn.metrics import accuracy_score
 from transformers import (
-    EsmForMaskedLM, 
-    EsmTokenizer, 
-    Trainer, 
-    DataCollatorForLanguageModeling
+    DataCollatorForLanguageModeling,
+    EsmForMaskedLM,
+    EsmTokenizer,
+    Trainer,
 )
-from datasets import DatasetDict, Dataset
+
 from curriculum_mods import (
     MixedConfig,
     define_args,
     tokenize,
 )
 
-from sklearn.metrics import accuracy_score
 
 def parser():
     parser = argparse.ArgumentParser()
-    
+
     parser.add_argument(
-        "--model", # model path
+        "--model_path",
         default=None,
         required=True,
         type=pathlib.Path,
@@ -45,22 +47,18 @@ def parser():
     return args
 
 
-@dataclass
-class ModelOutput:
-    name: str
-    chain: str
-    states: np.ndarray
-
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
-    
+
     # Convert logits and labels to PyTorch tensors for CEL calculation
     logits_tensor = torch.tensor(logits)
     labels_tensor = torch.tensor(labels)
 
     # Create a mask that excludes padding (-100) and sep token
-    mask_mod = (labels_tensor != -100) & ~torch.isin(labels_tensor, torch.tensor([0, 31]))
+    mask_mod = (labels_tensor != -100) & ~torch.isin(
+        labels_tensor, torch.tensor([0, 31])
+    )
     labels_tensor_mod = labels_tensor[mask_mod]
     logits_tensor_mod = logits_tensor[mask_mod]
 
@@ -73,25 +71,28 @@ def compute_metrics(eval_pred):
     predictions_mod = predictions[mask_mod.numpy()]
     labels_mod = labels_tensor_mod.numpy()
     accuracy_mod = accuracy_score(labels_mod, predictions_mod)
-    
-    return {
-        "accuracy_mod": accuracy_mod,
-        "CEL_mod": cel_mod.item()
-    }
+
+    return {"accuracy": accuracy_mod, "CE_loss": cel_mod.item()}
+
 
 def main():
     # read args
     args = parser()
 
     # load test data
-    path = "/home/jovyan/shared/Sarah/current/mixed-data_final"
-    paired = pd.read_parquet(f'{path}/2_sep-tokens/eval/data/paired-test/paired_sep_test-annotated.parquet')[['sequence_id', 'sequence']]
-    unpaired = pd.read_parquet(f'{path}/2_sep-tokens/eval/data/unpaired-test/unpaired_sep_test10k-annotated.parquet')[['sequence_id', 'sequence']]
+    paired = pd.read_parquet(f"./paired_sep_test-annotated.parquet")[
+        ["sequence_id", "sequence"]
+    ]
+    unpaired = pd.read_parquet(f"./unpaired_sep_test10k-annotated.parquet")[
+        ["sequence_id", "sequence"]
+    ]
 
-    dataset = DatasetDict({
-        "test-paired": Dataset.from_pandas(paired),
-        "test-unpaired": Dataset.from_pandas(unpaired),
-    })
+    dataset = DatasetDict(
+        {
+            "test-paired": Dataset.from_pandas(paired),
+            "test-unpaired": Dataset.from_pandas(unpaired),
+        }
+    )
 
     # tokenize
     tokenizer = EsmTokenizer.from_pretrained("../../tokenizer/")
@@ -104,7 +105,7 @@ def main():
             "truncation": True,
         },
         num_proc=16,
-        remove_columns=['sequence_id', 'sequence']
+        remove_columns=["sequence_id", "sequence"],
     )
 
     # collator
@@ -113,7 +114,7 @@ def main():
     )
 
     # load model
-    model = EsmForMaskedLM.from_pretrained(args.model)
+    model = EsmForMaskedLM.from_pretrained(args.model_path)
 
     # inference
     MixedConfig["report_to"] = None
@@ -125,18 +126,21 @@ def main():
         compute_metrics=compute_metrics,
     )
     res = trainer.evaluate(tokenized_dataset)
-    
-    # CEL mod
-    unpaired_CEL_mod = res['eval_test-unpaired_CEL_mod']
-    paired_CEL_mod = res['eval_test-paired_CEL_mod']
 
-    # accuracy mod
-    unpaired_acc_mod = res['eval_test-unpaired_accuracy_mod']
-    paired_acc_mod = res['eval_test-paired_accuracy_mod']
-    
-    with open(args.output_file, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([args.model_name, unpaired_CEL_mod, unpaired_acc_mod, paired_CEL_mod, paired_acc_mod])
+    # Prepend model name to results
+    res = {"model_name": args.model_name, **res}
+
+    # Check if header needs to be created in output file
+    write_header = (
+        not os.path.isfile(args.output_file) or os.stat(args.output_file).st_size == 0
+    )
+
+    with open(args.output_file, mode="a", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=res.keys())
+        if write_header:
+            writer.writeheader()
+        writer.writerow(res)
+
 
 if __name__ == "__main__":
     main()
