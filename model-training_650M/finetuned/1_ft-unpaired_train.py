@@ -1,8 +1,9 @@
 import os
 import warnings
-warnings.simplefilter('ignore')
+
+warnings.simplefilter("ignore")
 from transformers import (
-    EsmTokenizer, 
+    EsmTokenizer,
     EsmForMaskedLM,
     DataCollatorForLanguageModeling,
     Trainer,
@@ -17,6 +18,7 @@ from curriculum_mods import (
 )
 from datetime import date
 import argparse
+
 
 def parser():
     parser = argparse.ArgumentParser()
@@ -34,7 +36,7 @@ def parser():
         required=True,
     )
     parser.add_argument(
-        "--shards_dir", # name of directory containing unpaired dataset shards
+        "--shards_dir",  # name of directory containing unpaired dataset shards
         required=True,
     )
     parser.add_argument(
@@ -44,46 +46,55 @@ def parser():
     args = parser.parse_args()
     return args
 
+
 def main():
     # run name
     args = parser()
-    run_name = args.run_name # getting rid of date so I can schedule paired ft automatically
+    run_name = (
+        args.run_name
+    )  # getting rid of date so I can schedule paired ft automatically
 
     ## update config steps & warmup
     # total steps for unpaired phase: 500000 * 0.625 = 312,500
     # warmup = 6% = 18,750
-    MixedConfig['max_steps'] = 312500
-    MixedConfig['warmup_steps'] = 18750
+    MixedConfig["max_steps"] = 312500
+    MixedConfig["warmup_steps"] = 18750
     MixedConfig["eval_steps"] = 5000
 
     # Model size - 650M
-    MixedConfig['num_hidden_layers'] = 33
-    MixedConfig['hidden_size'] = 1280
-    MixedConfig['intermediate_size'] = 5120
+    MixedConfig["num_hidden_layers"] = 33
+    MixedConfig["hidden_size"] = 1280
+    MixedConfig["intermediate_size"] = 5120
 
     # Training Params
-    MixedConfig['batch_size'] = 64
-    MixedConfig['peak_learning_rate'] =  1e-4
-    
+    MixedConfig["batch_size"] = 64
+    MixedConfig["peak_learning_rate"] = 1e-4
+
     # seed
-    set_seed(MixedConfig.get('seed'))
-    
+    set_seed(MixedConfig.get("seed"))
+
     # load, tokenize, & format data
     tokenizer = EsmTokenizer.from_pretrained("../tokenizer/vocab.txt")
-    shards_dir = f'{args.unpaired_dir}{args.shards_dir}'
+    shards_dir = f"{args.unpaired_dir}{args.shards_dir}"
     data_files = {
         "paired_train": None,
-        "unpaired_train": [os.path.join(shards_dir, f) for f in os.listdir(shards_dir) if f.endswith('.parquet')],
-        "paired_eval": f'{args.paired_dir}paired-eval_20241119.parquet',
-        "unpaired_eval": f'{args.unpaired_dir}unpaired-eval_20241119.parquet',
+        "unpaired_train": [
+            os.path.join(shards_dir, f)
+            for f in os.listdir(shards_dir)
+            if f.endswith(".parquet")
+        ],
+        "paired_eval": f"{args.paired_dir}paired-eval_20241119.parquet",
+        "unpaired_eval": f"{args.unpaired_dir}unpaired-eval_20241119.parquet",
     }
-    train_dataset, eval_dataset = process_datasets(data_files=data_files,
-                                                   tokenizer=tokenizer,
-                                                   config=MixedConfig,
-                                                   constant_prob=True,
-                                                   prob=1,
-                                                   cache_dir=args.cache_dir,
-                                                   seed=MixedConfig.get('seed'))
+    train_dataset, eval_dataset = process_datasets(
+        data_files=data_files,
+        tokenizer=tokenizer,
+        config=MixedConfig,
+        constant_prob=True,
+        prob=1,
+        cache_dir=args.cache_dir,
+        seed=MixedConfig.get("seed"),
+    )
 
     # collator
     collator = DataCollatorForLanguageModeling(
@@ -91,8 +102,8 @@ def main():
     )
 
     # wandb
-    os.environ['WANDB_PROJECT'] = 'mxd-data_fx'
-    os.environ['WANDB_RUN_GROUP'] = 'large-scale'
+    os.environ["WANDB_PROJECT"] = "mxd-data_fx"
+    os.environ["WANDB_RUN_GROUP"] = "large-scale"
 
     # model
     model_config = define_config(MixedConfig)
@@ -112,6 +123,7 @@ def main():
     # train
     trainer.train()
     trainer.save_model(f"./models/{run_name}")
+
 
 if __name__ == "__main__":
     main()
