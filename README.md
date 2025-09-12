@@ -18,7 +18,8 @@ Training datasets can be downloaded from [Zenodo](https://doi.org/10.5281/zenodo
 The curriculum learning paper has been published in [PLOS Computational Biology](https://doi.org/10.1371/journal.pcbi.1013473), and can be cited as:
 
 ```
-Burbach SM, Briney B (2025) A curriculum learning approach to training antibody language models. PLoS Comput Biol 21(9): e1013473. https://doi.org/10.1371/journal.pcbi.1013473
+Burbach SM, Briney B (2025) A curriculum learning approach to training antibody language models.
+PLoS Comput Biol 21(9): e1013473. https://doi.org/10.1371/journal.pcbi.1013473
 
 ```
 
