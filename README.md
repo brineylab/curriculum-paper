@@ -6,7 +6,7 @@
 
 We introduce a method of curriculum learning for antibody language models (AbLMs), as an approach for pre-training AbLMs with both unpaired and natively paired sequence data. We compare this method to other pre-training approaches, such as finetuning and a constant mix. We also train a 650M parameter model, CurrAb, using our curriculum implementation. This repository contains the code used to train and evaluate the models presented in the paper.
 
-* [**Curriculum training mods**](curriculum-mods/): includes the configs, modified dataset, and trainer callback used to train the curriculum models
+* [**Curriculum training mods**](curriculum_mods/): includes the configs, modified dataset, and trainer callback used to train the curriculum models
 * [**55M-param model training**](model-training_55M/): training code for 55M parameter models
 * [**650M-param model training**](model-training_650M/): training code for 650M parameter models, including CurrAb
 * [**Model eval**](model-eval/): evaluation code used in the paper, including inference and specificity classification
